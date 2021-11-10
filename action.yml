@@ -13,6 +13,10 @@ inputs:
     description: "rootDir to search package.json files"
     required: false
     default: "."
+  commentWhenClean:
+    description: "Whether or not to comment when there are no deprecations"
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -29,17 +33,17 @@ runs:
         if [[ -z "${{ steps.deprecation-checker.outputs.deprecated }}" ]]; then
           echo "This PR is clear from deprecated packages!"
           echo "DEPRECATIONS=false" >> $GITHUB_ENV
-          # delete this line and the lines below it
-          echo "HEADER=# Testing, please ignore!" >> $GITHUB_ENV
-          echo "BODY<<EOF" >> $GITHUB_ENV
-          echo "<details open>
-          <summary>Click to toggle table visibility</summary>
-          <br/>
-
-          ```zsh
-          ${{ steps.deprecation-checker.outputs.deprecated }}
-          ```" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          if [[ "${{ inputs.commentWhenClean }}" == "true" ]]; then
+            echo "::group::Output"
+            echo "HEADER=# This PR is clear from deprecated packages!" >> $GITHUB_ENV
+            echo "BODY<<EOF" >> $GITHUB_ENV
+            echo "<details>
+            <summary>No package deprecations</summary>
+            All Clear :+1:
+            </details>" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "::endgroup::"
+          fi
         else
           echo "This PR contains deprecated packages!"
           echo "DEPRECATIONS=true" >> $GITHUB_ENV
@@ -61,7 +65,7 @@ runs:
     - name: Check for comment on PR
       id: fc-deprecated
       uses: peter-evans/find-comment@v1
-      if: always() #&& env.DEPRECATIONS == 'true'
+      if: always() && env.DEPRECATIONS == 'true'
       with:
         issue-number: ${{ inputs.pullRequestNumber }}
         comment-author: 'github-actions[bot]'
@@ -69,7 +73,7 @@ runs:
     - name: Create/Update PR comment
       id: npm-audit-comment
       uses: peter-evans/create-or-update-comment@v1
-      if: always() #&& env.DEPRECATIONS == 'true'
+      if: always() && env.DEPRECATIONS == 'true'
       with:
         comment-id: ${{ steps.fc-deprecated.outputs.comment-id }}
         issue-number: ${{ inputs.pullRequestNumber }}

@@ -20,13 +20,17 @@ Default: ""
 rootDir to search package.json files
 Default: `.`
 
+#### `commentWhenClean`
+Whether or not to comment when there are no deprecations
+Default: `false`
+
 
 ### Example usage
 ```yaml
       - name: Check for deprecated packages
         uses: CumulusDS/deprecated-packages-action@v1
         with:
-          pullRequestNumber: ${{ github.event.pull_request.number }}
+          commentWhenClean: true
 ```
 
 
