@@ -23,7 +23,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Deprecation Checker
-      uses: tinovyatkin/action-check-deprecated-js-deps@v1
+      uses: jeffsays/action-check-deprecated-js-deps@audit/1
       id: deprecation-checker
       with:
         ignore: ${{ inputs.ignore }}
@@ -55,9 +55,9 @@ runs:
           <summary>Click to toggle table visibility</summary>
           <br/>
 
-          ```zsh
+          \`\`\`zsh
           ${{ steps.deprecation-checker.outputs.deprecated }}
-          ```" >> $GITHUB_ENV
+          \`\`\`" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "::endgroup::"
         fi
