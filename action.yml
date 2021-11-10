@@ -1,0 +1,79 @@
+name: 'deprecated-packaged-action'
+description: 'checks for deprecated packages'
+inputs:
+  pullRequestNumber:
+    description: 'PR number for commenting'
+    required: true
+    default: ${{ github.event.pull_request.number }}
+  ignore:
+    description: "comma-separated list of packages names to ignore"
+    required: false
+    default: ""
+  root:
+    description: "rootDir to search package.json files"
+    required: false
+    default: "."
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Deprecation Checker
+      uses: tinovyatkin/action-check-deprecated-js-deps@v1
+      id: deprecation-checker
+      with:
+        ignore: ${{ inputs.ignore }}
+        root: ${{ inputs.root }}
+    - name: deprecations yes/no
+      run: |
+        if [[ -z "${{ steps.deprecation-checker.outputs.deprecated }}" ]]; then
+          echo "This PR is clear from deprecated packages!"
+          echo "DEPRECATIONS=false" >> $GITHUB_ENV
+          # delete this line and the lines below it
+          echo "HEADER=# Testing, please ignore!" >> $GITHUB_ENV
+          echo "BODY<<EOF" >> $GITHUB_ENV
+          echo "<details open>
+          <summary>Click to toggle table visibility</summary>
+          <br/>
+
+          ```zsh
+          ${{ steps.deprecation-checker.outputs.deprecated }}
+          ```" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        else
+          echo "This PR contains deprecated packages!"
+          echo "DEPRECATIONS=true" >> $GITHUB_ENV
+          echo "::group::Output"
+          echo "${{ steps.deprecation-checker.outputs.deprecated }}"
+          echo "HEADER=# This PR contains deprecated packages!" >> $GITHUB_ENV
+          echo "BODY<<EOF" >> $GITHUB_ENV
+          echo "<details open>
+          <summary>Click to toggle table visibility</summary>
+          <br/>
+
+          ```zsh
+          ${{ steps.deprecation-checker.outputs.deprecated }}
+          ```" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "::endgroup::"
+        fi
+      shell: bash
+    - name: Check for comment on PR
+      id: fc-deprecated
+      uses: peter-evans/find-comment@v1
+      if: always() #&& env.DEPRECATIONS == 'true'
+      with:
+        issue-number: ${{ inputs.pullRequestNumber }}
+        comment-author: 'github-actions[bot]'
+        body-includes: "deprecated packages!"
+    - name: Create/Update PR comment
+      id: npm-audit-comment
+      uses: peter-evans/create-or-update-comment@v1
+      if: always() #&& env.DEPRECATIONS == 'true'
+      with:
+        comment-id: ${{ steps.fc-deprecated.outputs.comment-id }}
+        issue-number: ${{ inputs.pullRequestNumber }}
+        body: |
+          ${{ env.HEADER }}
+          ${{ env.BODY }}
+        edit-mode: replace
