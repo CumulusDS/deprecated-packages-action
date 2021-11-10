@@ -9,19 +9,24 @@ Description
 ### Inputs
 #### `pullRequestNumber`
 PR number for commenting
+
 Required.
+
 Default: `${{ github.event.pull_request.number }}`
 
 #### `ignore`
 comma-separated list of packages names to ignore
+
 Default: ""
 
 #### `root`
 rootDir to search package.json files
+
 Default: `.`
 
 #### `commentWhenClean`
 Whether or not to comment when there are no deprecations
+
 Default: `false`
 
 
