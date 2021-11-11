@@ -23,7 +23,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Deprecation Checker
-      uses: jeffsays/action-check-deprecated-js-deps@audit/1
+      uses: jeffsays/action-check-deprecated-js-deps@master
       id: deprecation-checker
       with:
         ignore: ${{ inputs.ignore }}
@@ -52,12 +52,11 @@ runs:
           echo "HEADER=# This PR contains deprecated packages!" >> $GITHUB_ENV
           echo "BODY<<EOF" >> $GITHUB_ENV
           echo "<details open>
-          <summary>Click to toggle table visibility</summary>
+          <summary>Click to toggle visibility</summary>
           <br/>
 
-          \`\`\`zsh
           ${{ steps.deprecation-checker.outputs.deprecated }}
-          \`\`\`" >> $GITHUB_ENV
+          " >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           echo "::endgroup::"
         fi
