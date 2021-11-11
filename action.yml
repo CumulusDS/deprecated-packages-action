@@ -30,7 +30,7 @@ runs:
         root: ${{ inputs.root }}
     - name: deprecations yes/no
       run: |
-        if [[ -z "${{ steps.deprecation-checker.outputs.deprecated }}" ]]; then
+        if [[ "${{ steps.deprecation-checker.outputs.deprecated }}" =~ "no deprecated dependencies found" ]]; then
           echo "This PR is clear from deprecated packages!"
           echo "DEPRECATIONS=false" >> $GITHUB_ENV
           if [[ "${{ inputs.commentWhenClean }}" == "true" ]]; then
