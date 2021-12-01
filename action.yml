@@ -17,18 +17,24 @@ inputs:
     description: "Whether or not to comment when there are no deprecations"
     required: false
     default: 'false'
+  runAction:
+    default: 'false'
+    required: false
+    description: "Whether or not the action should run"
 runs:
   using: "composite"
   steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Deprecation Checker
+      if: inputs.runAction == 'true'
       uses: jeffsays/action-check-deprecated-js-deps@master
       id: deprecation-checker
       with:
         ignore: ${{ inputs.ignore }}
         root: ${{ inputs.root }}
     - name: deprecations yes/no
+      if: inputs.runAction == 'true'
       run: |
         if [[ "${{ steps.deprecation-checker.outputs.deprecated }}" =~ "no deprecated dependencies found" ]]; then
           echo "This PR is clear from deprecated packages!"
@@ -64,7 +70,7 @@ runs:
     - name: Check for comment on PR
       id: fc-deprecated
       uses: peter-evans/find-comment@v1
-      if: always() && env.DEPRECATIONS == 'true'
+      if: always() && env.DEPRECATIONS == 'true' && inputs.runAction == 'true'
       with:
         issue-number: ${{ inputs.pullRequestNumber }}
         comment-author: 'github-actions[bot]'
@@ -72,7 +78,7 @@ runs:
     - name: Create/Update PR comment
       id: npm-audit-comment
       uses: peter-evans/create-or-update-comment@v1
-      if: always() && env.DEPRECATIONS == 'true'
+      if: always() && env.DEPRECATIONS == 'true' && inputs.runAction == 'true'
       with:
         comment-id: ${{ steps.fc-deprecated.outputs.comment-id }}
         issue-number: ${{ inputs.pullRequestNumber }}
