@@ -6,8 +6,8 @@ labels:
   description: Something isn't working
   color: d73a4a
 - name: dependabot
-  description: Pull requests opened by dependabot
-  color: 006B75
+  description: ""
+  color: 8B7A97
 - name: documentation
   description: Improvements or additions to documentation
   color: 0075ca
